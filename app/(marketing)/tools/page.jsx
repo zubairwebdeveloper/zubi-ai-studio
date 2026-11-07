@@ -7,7 +7,7 @@ export const metadata = {
   description: "Search and filter every AI Studio tool by category, credit cost and status.",
   alternates: { canonical: "/tools" },
 };
-
+export const instant = false;
 export default function ToolsPage() {
   return (
     <div className="container py-12">

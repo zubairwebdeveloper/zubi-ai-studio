@@ -1,2 +1,12 @@
-export const metadata = { robots: { index: false, follow: false } };
-export default function DashboardLayout({ children }) { return children; }
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export default function DashboardLayout({ children }) {
+  return <ProtectedRoute>{children}</ProtectedRoute>;
+}

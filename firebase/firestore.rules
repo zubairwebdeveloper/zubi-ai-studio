@@ -1,0 +1,83 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function roleOf(uid) {
+      return get(
+        /databases/$(database)/documents/users/$(uid)
+      ).data.role;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && roleOf(request.auth.uid) in ['ADMIN', 'SUPER_ADMIN'];
+    }
+
+    // User profiles: server writes only
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+
+    // Favorites
+    match /favorites/{id} {
+      allow read: if signedIn()
+        && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Projects
+    match /projects/{id} {
+      allow read: if signedIn()
+        && resource.data.ownerId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Notifications
+    match /notifications/{id} {
+      allow read: if signedIn()
+        && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Credits
+    match /creditWallets/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+
+    match /creditTransactions/{id} {
+      allow read: if signedIn()
+        && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Project assets
+    match /projectAssets/{id} {
+      allow read: if signedIn()
+        && resource.data.ownerId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // AI generations
+    match /generations/{id} {
+      allow read: if signedIn()
+        && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
